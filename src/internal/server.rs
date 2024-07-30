@@ -1,4 +1,4 @@
-use http::{HeaderMap, Method, Request, Response, Uri};
+use http::{Request, Response};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Body, Bytes};
 use hyper::server::conn::http1;
@@ -7,10 +7,10 @@ use std::convert::Infallible;
 use std::fmt::Debug;
 use std::sync::mpsc;
 use tokio::{self, net::TcpListener, runtime::Runtime, sync::oneshot};
+mod model;
 
 use super::tokio_io::TokioIo;
-
-pub(crate) struct RequestResponse(pub ServerRequest, pub oneshot::Sender<ServerResponse>);
+pub(crate) use model::*;
 
 pub struct Server {
     pending_requests: mpsc::Receiver<RequestResponse>,
@@ -121,27 +121,4 @@ where
         .expect("Unable to construct response");
 
     Ok(response)
-}
-
-pub struct ServerRequest {
-    pub headers: HeaderMap,
-    pub method: Method,
-    pub uri: Uri,
-    pub body: Vec<u8>,
-}
-
-pub struct ServerResponse {
-    pub headers: HeaderMap,
-    pub status_code: u16,
-    pub body: Vec<u8>,
-}
-
-impl ServerResponse {
-    pub fn not_found() -> Self {
-        Self {
-            headers: Default::default(),
-            status_code: 404,
-            body: "Not Found".as_bytes().to_vec(),
-        }
-    }
 }
