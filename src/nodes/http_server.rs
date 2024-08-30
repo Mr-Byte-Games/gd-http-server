@@ -38,8 +38,8 @@ impl HttpServer {
             return ServerResponse::not_found();
         };
 
-        let path = request.uri.path().to_string();
-        let Ok(route) = router.at(&path) else {
+        let uri = request.uri.clone();
+        let Ok(route) = router.at(uri.path()) else {
             return ServerResponse::not_found();
         };
 
