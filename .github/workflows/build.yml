@@ -2,14 +2,14 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
 
-jobs:        
+jobs:
   build:
     strategy:
       fail-fast: false
@@ -55,18 +55,44 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build (Debug)
-      if: ${{ startsWith(matrix.target, 'debug') }}
-      run: cargo build --verbose
-    - name: Build (Release)
-      if: ${{ startsWith(matrix.target, 'release') }}
-      run: cargo build --release --verbose
-    - name: Architve Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: lib-${{ matrix.platform }}-${{ matrix.target }}
-        path: |
-          target/${{ matrix.target }}/*.dll
-          target/${{ matrix.target }}/*.dylib
-          target/${{ matrix.target }}/*.so
+      - uses: actions/checkout@v4
+      - name: Build (Debug)
+        if: ${{ startsWith(matrix.target, 'debug') }}
+        run: cargo build --verbose
+      - name: Build (Release)
+        if: ${{ startsWith(matrix.target, 'release') }}
+        run: cargo build --release --verbose
+      - name: Archive Artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lib-${{ matrix.platform }}-${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/*.dll
+            target/${{ matrix.target }}/*.dylib
+            target/${{ matrix.target }}/*.so
+
+  package:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lib-*
+
+      - name: Package Artifacts
+        run: |
+          find . -type f \( -name '*.so' -o -name '*.dll' -o -name '*.dylib' \) -exec bash -c 'path=$(echo $0 | sed s/-/\\//g); mkdir -p ${path%/*}; mv $0 $_' {} \;
+          mkdir -p project/addon/gd-http-server
+          mv ./lib ./project/addon/gd-http-server
+          cp LICENSE ./project/addon/gd-http-server
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          path: |
+            ${{ github.workspace }}/project/
