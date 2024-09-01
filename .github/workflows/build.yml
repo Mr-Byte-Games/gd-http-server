@@ -64,7 +64,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ matrix.platform }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Build (Debug)
         if: ${{ startsWith(matrix.target, 'debug') }}
         run: cargo build --verbose
