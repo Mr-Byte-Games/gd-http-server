@@ -93,9 +93,9 @@ jobs:
       - name: Package Artifacts
         run: |
           find . -type f \( -name '*.so' -o -name '*.dll' -o -name '*.dylib' \) -exec bash -c 'path=$(echo $0 | sed s/-/\\//g); mkdir -p ${path%/*}; mv $0 $_' {} \;
-          mkdir -p project/addon/gd-http-server
-          mv ./lib ./project/addon/gd-http-server
-          cp LICENSE ./project/addon/gd-http-server
+          mkdir -p project/addons/gd-http-server
+          mv ./lib ./project/addons/gd-http-server
+          cp LICENSE ./project/addons/gd-http-server
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
