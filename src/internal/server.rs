@@ -9,7 +9,7 @@ use std::sync::mpsc;
 use tokio::{self, net::TcpListener, runtime::Runtime, sync::oneshot};
 mod model;
 
-use super::tokio_io::TokioIo;
+// use super::tokio_io::TokioIo;
 pub(crate) use model::*;
 
 pub struct Server {
@@ -31,7 +31,7 @@ impl Server {
     }
 
     pub fn pending_requests(&mut self) -> impl Iterator<Item = RequestResponse> + '_ {
-        return self.pending_requests.try_iter();
+        self.pending_requests.try_iter()
     }
 
     pub fn shutdown(self) {
@@ -49,34 +49,36 @@ fn spawn_server(
         let runtime = Runtime::new().expect("Failed to create tokio runtime.");
 
         runtime.block_on(async move {
-            let listener = TcpListener::bind(format!("0.0.0.0:{port}"))
-                .await
-                .expect("Unable to open socket.");
+            tokio::spawn(async move {
+                let listener = TcpListener::bind(format!("0.0.0.0:{port}"))
+                    .await
+                    .expect("Unable to open socket.");
 
-            tokio::pin!(shutdown_receiver);
+                tokio::pin!(shutdown_receiver);
 
-            loop {
-                tokio::select! {
-                    _ = &mut shutdown_receiver => break,
-                    Ok((stream, _)) = listener.accept() => {
-                        let stream = TokioIo::new(stream);
-                        let request_sender = request_sender.clone();
+                loop {
+                    tokio::select! {
+                        _ = &mut shutdown_receiver => break,
+                        Ok((stream, _)) = listener.accept() => {
+                            let stream = hyper_util::rt::TokioIo::new(stream);
+                            let request_sender = request_sender.clone();
 
-                        tokio::task::spawn(async move {
-                            let result = http1::Builder::new()
-                                .serve_connection(
-                                    stream,
-                                    service_fn( |request| handler(request_sender.clone(), request)),
-                                )
-                                .await;
+                            tokio::task::spawn(async move {
+                                let result = http1::Builder::new()
+                                    .serve_connection(
+                                        stream,
+                                        service_fn( |request| handler(request_sender.clone(), request)),
+                                    )
+                                    .await;
 
-                            if let Err(err) = result {
-                                eprintln!("Error serving connection: {:?}", err);
-                            }
-                        });
+                                if let Err(err) = result {
+                                    eprintln!("Error serving connection: {:?}", err);
+                                }
+                            });
+                        }
                     }
                 }
-            }
+            }).await.expect("server task unexpectedly terminated");
         });
     });
 }

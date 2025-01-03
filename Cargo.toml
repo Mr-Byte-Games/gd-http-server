@@ -21,3 +21,4 @@ pin-project-lite = "0.2.14"
 http-body-util = "0.1.2"
 matchit = "0.8.4"
 querystring = "1.1.0"
+hyper-util = { version = "0.1.10", features = ["tokio"] }
