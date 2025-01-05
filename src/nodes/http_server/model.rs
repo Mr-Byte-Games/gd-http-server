@@ -47,7 +47,7 @@ pub struct HttpRequest {
 
 impl From<ServerRequest> for HttpRequest {
     fn from(value: ServerRequest) -> Self {
-        let path = value.uri.path().into_godot();
+        let path = value.uri.path().to_godot();
 
         let parsed_query_params = querify(value.uri.query().unwrap_or_default());
         let mut query_params = Dictionary::new();

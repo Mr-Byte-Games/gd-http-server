@@ -8,17 +8,15 @@ crate-type = ["cdylib"] # Compile this crate to a dynamic C library.
 
 [dependencies]
 godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
-http = "1.1.0"
-hyper = { version = "1.4.1", features = ["http1", "server"] }
-tokio = { version = "1.38.0", features = [
+http = "1.2.0"
+hyper = { version = "1.5.2", features = ["http1", "server"] }
+tokio = { version = "1.42.0", features = [
     "rt-multi-thread",
     "sync",
     "net",
     "macros",
 ] }
-tower = "0.4.13"
-pin-project-lite = "0.2.14"
 http-body-util = "0.1.2"
-matchit = "0.8.4"
+matchit = "0.8.6"
 querystring = "1.1.0"
 hyper-util = { version = "0.1.10", features = ["tokio"] }

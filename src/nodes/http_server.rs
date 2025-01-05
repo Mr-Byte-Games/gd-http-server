@@ -48,9 +48,9 @@ impl HttpServer {
 
         let request: Gd<HttpRequest> = Gd::from_object(request);
         let response: Gd<HttpResponse> = Gd::from_object(Default::default());
-        let args = array![request.to_variant(), response.to_variant()];
+        let args = varray![request, response];
 
-        route.value.callv(args);
+        route.value.callv(&args);
 
         let response = response.bind();
         let headers = response
