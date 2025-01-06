@@ -58,9 +58,9 @@ impl HttpServer {
             .iter_shared()
             .map(|(key, value)| {
                 (
-                    HeaderName::from_bytes(key.to_godot().stringify().to_string().as_bytes())
+                    HeaderName::from_bytes(key.to::<String>().as_bytes())
                         .expect("Unable to convert header name."),
-                    HeaderValue::from_bytes(value.to_godot().stringify().to_string().as_bytes())
+                    HeaderValue::from_bytes(value.to::<String>().as_bytes())
                         .expect("Unable to convert header value."),
                 )
             })
